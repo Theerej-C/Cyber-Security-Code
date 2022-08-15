@@ -28,6 +28,109 @@ def usage():
     print("     file.name -t targethost -p port -l -c")
     
     sys.exit(0)
+
+def main_server_loop():
+    global target
+    
+    if not len(target):
+        target = "0.0.0.0"
+        
+    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    
+    server.bind((target,port))
+        
+    server.listen(5)
+    
+    while True:
+        
+        client_soc,addr = server.accept()
+        process_server = threading.Thread(target=client_handle,args=(client_soc,))
+        process_server.start() 
+        
+def client_handle(client_soc):
+    if len(dest):
+        file_buffer=""
+        
+        while True:
+            data=client_soc.recv(1024)
+            
+            if not data:
+                break
+            else:
+                file_buffer+=data
+                
+        try:
+            file_desc = open(dest,"wb")
+            file_desc.write(file_buffer)
+            file_desc.close()
+            
+            client_soc.send("Sucessfully written in the destination".encode())
+            
+                
+        except:
+            client_soc.send("Failed to upload to destination".encode())
+            
+    if len(execute):
+        output=run_command(execute)
+        
+        client_soc.send(output.encode())
+        
+    if command:
+        
+        while True:
+            client_soc.send("<NET>.".encode())
+            
+            cmd_buffer = ""
+            
+            while "\n" not in cmd_buffer:
+                cmd_buffer += client_soc.recv(1024)
+                
+            response = run_command(cmd_buffer)
+            
+            client_socket.send(response.encode())
+            
+def run_command(command):
+    command = command.rstrip()
+    
+    try:
+        output=subprocess.check_output(command,stderr=subprocess.STDOUT,shell=True)
+        
+    except:
+        print("Command not Executed:")
+        
+    return output
+def client_send(buffer):
+    
+    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
+    
+    try:
+        s.connect((target,port))
+        
+        if len(buffer):
+            s.send(buffer.encode())
+            
+        while true:
+            recv_len = 1
+            response = ""
+            
+            while recv_len:
+                data = s.recv(1024)
+                recv_len = len(data)
+                response += data
+                
+            print(response)
+            
+        buffer = raw_input("")
+        
+        buffer+="\n"
+        
+        s.send(buffer.encode())
+        
+    except:
+        print("Exception Exist")
+        
+       
+        
     
 def main():
     global listen 
@@ -62,7 +165,7 @@ def main():
         elif o in ("-t","--target"):
             target = a 
         elif o in ("-p","--port"):
-            port = a
+            port = int(a)
         else:
             assert False,"Unhandled Option" 
         
@@ -73,63 +176,6 @@ def main():
         client_send(buffer)
     
     if listen:
-        server_loop()
+        main_server_loop()
     
 main()
-
-def client_send(buffer):
-    
-    s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    
-    try:
-        s.connect((target,port))
-        
-        if len(buffer):
-            s.send(buffer.encode())
-            
-        while true:
-            recv_len = 1
-            response = ""
-            
-            while recv_len:
-                data = s.recv(1024)
-                recv_len = len(data)
-                response += data
-                
-            print(response)
-            
-        buffer = raw_input("")
-        
-        buffer+="\n"
-        
-        s.send(buffer.encode())
-        
-    except:
-        
-        print("Exception Exist")
-        
-        s.close()
-        
-def main_server_loop():
-    global target
-    
-    if not len(target):
-        target = "0.0.0.0"
-        
-    server = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    
-    server.bind((target,port))
-        
-    server.listen(5)
-    
-    while True:
-        
-        client_soc,addr = server.accept()
-        process_server = threading.Thread(target=client_handler,args=(client_soc,))
-        process_server.start()
-        
-        
-        
-    
-    
-    
