@@ -77,3 +77,6 @@ do
         echo none
     fi
 done
+
+#So the for can be tricky so that we should use in carefully
+
