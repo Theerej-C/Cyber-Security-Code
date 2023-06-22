@@ -64,7 +64,7 @@ done
 #We can use the both the listing and dir methods at same time
 #Then we should be cautious in the non existance of the files and folders
 # The for will consider the non existance also in consideration
-# So we should first check the file before we use that
+# So we should first check the file before we use that so that we can know it
 for file in /home/kali/Downloads/* /home/kali/Scripts/*
 do 
     if [ -d "$file" ] && [[ "$file" == /home/kali/Dow* ]]
